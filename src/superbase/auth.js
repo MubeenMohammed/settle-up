@@ -1,20 +1,10 @@
 import supabase from "./superbase";
-import { createUser } from "../backendFunctions/backendFunctions";
 
 export const signUp = async (email, password) => {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
   });
-  if (data) {
-    const user = {
-      user_id: data.user.id,
-      name: "Mubeen Mohammed",
-      created: data.user.created_at,
-      email: data.user.email,
-    };
-    //await createUser(user);
- }
   if (error) {
     console.log("Error during signUp", error.message);
   }
@@ -35,8 +25,8 @@ export const logOut = async () => {
 };
 
 export const getSession = async () => {
-  const { data, error } = await supabase.auth.session();
-  return { session: data.session, error };
+  const { data, error } = await supabase.auth.refreshSession();
+  return { data, error };
 };
 
 export const onAuthStateChange = (callback) => {

@@ -1,9 +1,25 @@
-import { Link } from "react-router-dom";
-import { logOut } from "../../superbase/auth";
-import { getUser } from "../../superbase/auth";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { getUser, logOut } from "../../superbase/auth";
 
 export default function HomePage() {
-    console.log(getUser());
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const { user } = await getUser();
+      if (!user.user) {
+        navigate("/login");
+      }
+    };
+    checkUser();
+  }, [navigate]);
+
+  const handleLogout = async () => {
+    await logOut();
+    navigate("/login");
+  };
+
   return (
     <div style={styles.container}>
       <h1 style={styles.title}>Welcome to My App</h1>
@@ -12,13 +28,9 @@ export default function HomePage() {
       </p>
 
       <div style={styles.buttonContainer}>
-        <Link
-          to="/login"
-          style={styles.button}
-          onClick={() => logOut()}
-        >
+        <button style={styles.button} onClick={handleLogout}>
           Log Out
-        </Link>
+        </button>
       </div>
     </div>
   );
