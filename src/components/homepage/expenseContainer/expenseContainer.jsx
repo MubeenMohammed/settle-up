@@ -2,7 +2,7 @@ import React from "react";
 import FriendsTab from "./friendsTab";
 import GroupsTab from "./groupsTab";
 
-const ExpenseContainer = ({ expenses, groups, onFriendsTab, setOnFriendsTab }) => {
+const ExpenseContainer = ({ friends, groups, onFriendsTab, setOnFriendsTab }) => {
 
   return (
     <div className="bg-[#D9F2B4] flex-1">
@@ -29,7 +29,7 @@ const ExpenseContainer = ({ expenses, groups, onFriendsTab, setOnFriendsTab }) =
         </button>
       </div>
       {onFriendsTab ? (
-        <FriendsTab expenses={expenses} />
+        <FriendsTab friends={friends} />
       ) : (
         <GroupsTab groups={groups} />
       )}

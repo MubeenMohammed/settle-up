@@ -1,114 +1,53 @@
-import React from "react";
-import LongLogo from "../../assets/long_logo.svg";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUser } from "../../superbase/auth";
-import { useEffect } from "react";
+import LongLogo from "../../assets/long_logo.svg";
 
-export default function LoginSignUpScreen() {
+export default function LoginSignUpScreen({ screenSize }) {
   const Navigate = useNavigate();
 
   useEffect(() => {
     const checkUser = async () => {
       const { user } = await getUser();
-      if (user.user) {
+      if (user?.user) {
         Navigate("/home");
       }
     };
     checkUser();
   }, [Navigate]);
 
-
-  const styles = {
-    container: {
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "space-between",
-      alignItems: "center",
-      height: "100vh",
-      background: "linear-gradient(to bottom, #BCF4F5, #D9F2B4)",
-    },
-    logoSection: {
-      height: "320px", // Height of the logo section
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      borderBottom: "5px solid #000000", // Border at the bottom of the logo section
-    },
-    logo: {
-      width: "100%",
-    },
-    buttonsSection: {
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      height: "320px",
-      marginBottom: "50px", // Space between buttons and the bottom
-    },
+  const dynamicStyles = {
     button: {
-      width: "250px",
-      height: "60px",
-      padding: "12px",
-      margin: "10px",
-      border: "none",
-      borderRadius: "15px",
-      fontSize: "18px",
-      cursor: "pointer",
-      fontWeight: "700",
-      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+      width: screenSize.width < 480 ? "200px" : "250px",
+      height: screenSize.width < 480 ? "50px" : "60px",
     },
-    loginButton: {
-      backgroundColor: "#B4EBCA",
-      color: "#333333",
-    },
-    signupButton: {
-      backgroundColor: "#D9F2B4",
-      color: "#333333",
-    },
-  };
-
-  const animationStyle = {
     container: {
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      height: "300px",
-      background: "#e0f7fa", // Light pastel background
-    },
-    svg: {
-      width: "100%",
-      maxWidth: "800px",
-    },
-    path: {
-      strokeDasharray: 2000, // Length of the path
-      strokeDashoffset: 2000, // Hide the path initially
-      animation: "draw-line 3s ease-in-out forwards",
-    },
-    text: {
-      fontFamily: "Arial, sans-serif",
-      fontSize: "24px",
-      fill: "#000000",
+      fontSize: screenSize.width < 480 ? "14px" : "16px",
     },
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.logoSection}>
-        <img
-          src={LongLogo}
-          alt="logo"
-          style={styles.logo}
-        />
+    <div
+      className="flex flex-col justify-between items-center h-screen bg-gradient-to-b from-[#BCF4F5] to-[#D9F2B4]"
+      style={dynamicStyles.container}
+    >
+      {/* Logo Section */}
+      <div className="h-[320px] flex flex-col items-center justify-center border-b-4 border-black">
+        <img src={LongLogo} alt="logo" className="w-full" />
       </div>
-      <div style={styles.buttonsSection}>
+
+      {/* Buttons Section */}
+      <div className="flex flex-col items-center h-[320px] mb-12">
         <button
-          style={{ ...styles.button, ...styles.loginButton }}
+          style={dynamicStyles.button}
+          className="px-3 py-2 mb-2 bg-[#B4EBCA] text-gray-800 font-bold rounded-lg shadow-md hover:shadow-lg transition-all"
           onClick={() => Navigate("/login")}
         >
           LOGIN
         </button>
         <button
-          style={{ ...styles.button, ...styles.signupButton }}
+          style={dynamicStyles.button}
+          className="px-3 py-2 bg-[#D9F2B4] text-gray-800 font-bold rounded-lg shadow-md hover:shadow-lg transition-all"
           onClick={() => Navigate("/signup")}
         >
           SIGN UP

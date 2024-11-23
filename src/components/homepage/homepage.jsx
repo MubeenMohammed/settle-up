@@ -1,37 +1,34 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUser, logOut } from "../../superbase/auth";
 import Header from "./header";
 import UserInfo from "./userInfo";
 import ExpenseContainer from "./expenseContainer/expenseContainer";
+import { getFriendsByUserId, getGroupsByUserId } from "../../backendFunctions/backendFunctions";
+import LoadingScreen from "../loadingScreen/loadingScreen";
 
-export default function HomePage() {
+export default function HomePage({ screenSize }) {
   const [onFriendsTab, setOnFriendsTab] = useState(true);
-  const expenses = [
-    { name: 'Subodh Kothe', amount: 500, owes: true },
-    { name: 'Shobhit Bakliwal', amount: 500, owes: false },
-    { name: 'Firasat Durrani', amount: 500, owes: false },
-    { name: 'Sushil Kumar', amount: 500, owes: true },
-  ];
-
-  const groups = [
-    { name: "Trip To Lonavala", to: "Shubham", amount: 500, owes: true },
-    { name: "Movie Night", to: "Shobhit Bakliwal", amount: 500, owes: false },
-    { name: "Dinner at Canto", to: "Firasat Durrani", amount: 500, owes: false },
-    { name: "Trip To Matheran", to: "Sushil Kumar", amount: 500, owes: true },
-  ];
+  const [user, setUser] = useState(null); // Initial user state is null
+  const [loading, setLoading] = useState(true); // Add a loading state
 
   const navigate = useNavigate();
 
   useEffect(() => {
     const checkUser = async () => {
       const { user } = await getUser();
-      if (!user.user) {
+      if (user === null || user.user === null) { 
         navigate("/login");
+      } else {
+        setUser(user);
       }
+      setLoading(false); 
     };
+  
     checkUser();
   }, [navigate]);
+
+  
 
   const addButtonClicked = () => {
     if (onFriendsTab) {
@@ -45,37 +42,69 @@ export default function HomePage() {
     navigate("/login");
   };
 
-  return (
-    <div className="w-[412px] h-[915px] mx-auto flex flex-col bg-[#D9F2B4] relative overflow-hidden">
-      <Header />
-      <UserInfo 
-        name="Meha Bakliwal"
-        youAreOwed={1500}
-        youOwe={750}
-        totalBalance={750}
-      />
-      <ExpenseContainer expenses={expenses} groups={groups} onFriendsTab={onFriendsTab} setOnFriendsTab={setOnFriendsTab}/>
+  const dynamicStyles = {
+    container: {
+      width: screenSize.width,
+      height: "100vh",
+    },
+    button: {
+      width: screenSize.width < 480 ? "50px" : "60px",
+      height: screenSize.width < 480 ? "50px" : "60px",
+    },
+  };
 
-      <button 
-        className="absolute bottom-6 right-6 bg-[#234F3D] rounded-full flex items-center justify-center shadow-lg text-white hover:bg-[#1d3f31] transition-transform transform hover:scale-105 w-16 h-16"
-        aria-label="Add new expense"
-        onClick={addButtonClicked}
+  return (
+    !loading ? (
+      <div
+        style={dynamicStyles.container}
+        className="mx-auto flex flex-col bg-[#D9F2B4] relative overflow-hidden"
       >
-        <svg 
-          xmlns="http://www.w3.org/2000/svg" 
-          className="w-8 h-8" 
-          fill="none" 
-          viewBox="0 0 24 24" 
-          stroke="currentColor" 
-          strokeWidth={2}
+        {/* Header Section */}
+        <Header />
+  
+        {/* User Information */}
+        <UserInfo
+          name="Meha Bakliwal"
+          youAreOwed={1500}
+          youOwe={750}
+          totalBalance={750}
+        />
+  
+        {/* Expense Container */}
+        <ExpenseContainer
+          friends={
+            JSON.parse(sessionStorage.getItem("userFriends")) ? JSON.parse(sessionStorage.getItem("userFriends")) : "No Friends found"
+          }
+          groups={
+            JSON.parse(sessionStorage.getItem("userGroups")) ? JSON.parse(sessionStorage.getItem("userGroups")) : "No groups found"
+          }
+          onFriendsTab={onFriendsTab}
+          setOnFriendsTab={setOnFriendsTab}
+        />
+        {/* Logout Button */}
+        <button onClick={handleLogout}>LogOut</button>
+  
+        {/* Add New Expense or Group Button */}
+        <button
+          style={dynamicStyles.button}
+          className="absolute bottom-6 right-6 bg-[#234F3D] rounded-full flex items-center justify-center shadow-lg text-white hover:bg-[#1d3f31] transition-transform transform hover:scale-105"
+          aria-label="Add new expense"
+          onClick={addButtonClicked}
         >
-          <path 
-            strokeLinecap="round" 
-            strokeLinejoin="round" 
-            d="M12 4v16m8-8H4" 
-          />
-        </svg>
-      </button>
-    </div>
-  );
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-8 h-8"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+        </button>
+      </div>
+    ) : (
+      <LoadingScreen />
+    )
+  );  
 }
