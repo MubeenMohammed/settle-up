@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Camera, AirplayIcon, Home, Heart, ClipboardList } from "lucide-react";
+import FileUpload from "../../fileUpload";
 
 export default function AddGroup({ screenSize }) {
   const [groupName, setGroupName] = useState("");
@@ -89,6 +90,7 @@ export default function AddGroup({ screenSize }) {
               </span>
             </button>
           ))}
+          <FileUpload/>
         </div>
       </div>
     </div>
