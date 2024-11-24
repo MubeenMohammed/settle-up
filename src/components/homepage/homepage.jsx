@@ -4,13 +4,14 @@ import { getUser, logOut } from "../../superbase/auth";
 import Header from "./header";
 import UserInfo from "./userInfo";
 import ExpenseContainer from "./expenseContainer/expenseContainer";
-import { getFriendsByUserId, getGroupsByUserId, getUserByUserId } from "../../backendFunctions/backendFunctions";
+import { getFriendsByUserId, getGroupsByUserId, getUserByUserId, getUserTotalExpense } from "../../backendFunctions/backendFunctions";
 import LoadingScreen from "../loadingScreen/loadingScreen";
 
 export default function HomePage({ screenSize }) {
   const [onFriendsTab, setOnFriendsTab] = useState(true);
   const [user, setUser] = useState(null); // Initial user state is null
   const [loading, setLoading] = useState(true); // Add a loading state
+  const [expenses, setExpenses] = useState({ owe: 0, lent: 0 }); // State to store expenses
 
   const navigate = useNavigate();
 
@@ -28,23 +29,41 @@ export default function HomePage({ screenSize }) {
     checkUser();
   }, [navigate]);
 
-  
   useEffect(() => {
-    const user = JSON.parse(sessionStorage.getItem("user"));
-    if (user) {
-      getGroupsByUserId(user.id).then((data) => {
-        sessionStorage.setItem("userGroups", JSON.stringify(data.data));
-      });
-      getFriendsByUserId(user.id).then((data) => {
-        sessionStorage.setItem("userFriends", JSON.stringify(data.data));
-      });
-      getUserByUserId(user.id).then((data) => {
-        sessionStorage.setItem("user", JSON.stringify(data.data[0]));
-      });
-    }
-  }, []);
+    const fetchUserData = async () => {
+      const user = JSON.parse(sessionStorage.getItem("user"));
+      if (user) {
+        try {
+          // Fetch user groups
+          const groupData = await getGroupsByUserId(user.id);
+          sessionStorage.setItem("userGroups", JSON.stringify(groupData.data));
 
-  
+          // Fetch user friends
+          const friendsData = await getFriendsByUserId(user.id);
+          sessionStorage.setItem("userFriends", JSON.stringify(friendsData.data));
+
+          // Fetch user details
+          const userData = await getUserByUserId(user.id);
+          sessionStorage.setItem("user", JSON.stringify(userData.data[0]));
+
+          // Fetch user's total expenses
+          const expenseData = await getUserTotalExpense(user.id);
+          console.log("Expense data:", expenseData);
+          if (expenseData.status === "success") {
+            console.log("Expense data:", expenseData.data);
+            setExpenses({
+              owe: expenseData.data.owe,
+              lent: expenseData.data.lent,
+            });
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   const addButtonClicked = () => {
     if (onFriendsTab) {
@@ -52,7 +71,6 @@ export default function HomePage({ screenSize }) {
     }
     navigate("/add-expense");
   };
-
 
   const dynamicStyles = {
     container: {
@@ -77,9 +95,9 @@ export default function HomePage({ screenSize }) {
         {/* User Information */}
         <UserInfo
           name={JSON.parse(sessionStorage.getItem("user")).name}
-          youAreOwed={1500}
-          youOwe={750}
-          totalBalance={750}
+          youAreOwed={expenses.lent} // Using fetched data
+          youOwe={expenses.owe} // Using fetched data
+          totalBalance={expenses.lent - expenses.owe} // Calculating total balance
         />
   
         {/* Expense Container */}

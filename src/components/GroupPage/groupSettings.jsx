@@ -82,7 +82,6 @@ const GroupSettings = () => {
         </button>
 
         {/* Group Members */}
-        {/* Group Members */}
         <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-[#234F3D]">
           <h2 className="text-lg font-semibold text-[#234F3D]">Group Members</h2>
           <ul className="mt-4 space-y-3">

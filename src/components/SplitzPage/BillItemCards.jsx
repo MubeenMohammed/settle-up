@@ -7,13 +7,16 @@ import { addSplit } from "../../backendFunctions/backendFunctions";
 const BillItemCards = () => {
   const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isMicEnabled, setIsMicEnabled] = useState(true);
+  const [isMicEnabled, setIsMicEnabled] = useState(false); // Mic is initially disabled
   const [selectedMembers, setSelectedMembers] = useState({});
   const [groupMembers, setGroupMembers] = useState([]);
   const [sampleItems, setSampleItems] = useState(null); // State to store sample items
   const [loading, setLoading] = useState(true); // Loading state
   const [dragStart, setDragStart] = useState(0);
+  const [isRecording, setIsRecording] = useState(false); // Audio recording state
   const cardRef = useRef(null);
+  const mediaRecorderRef = useRef(null); // Ref for MediaRecorder
+  const audioChunksRef = useRef([]); // Ref to store audio chunks
 
   useEffect(() => {
     const initializeData = async () => {
@@ -48,8 +51,51 @@ const BillItemCards = () => {
     initializeData();
   }, []);
 
-  // Derived array of active user_ids for the current item
-  const activeUserIds = selectedMembers[sampleItems?.[currentIndex]?.id] || [];
+  const activeUserIds = selectedMembers[sampleItems?.[currentIndex]?.id] || []; // Dynamically derive active user IDs
+
+  // Function to start recording audio
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorderRef.current = new MediaRecorder(stream);
+      audioChunksRef.current = []; // Reset audio chunks
+
+      mediaRecorderRef.current.ondataavailable = (event) => {
+        audioChunksRef.current.push(event.data);
+      };
+
+      mediaRecorderRef.current.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/wav" });
+        const fileName = `${sampleItems[currentIndex].name}_recording.wav`;
+        const file = new File([audioBlob], fileName, { type: "audio/wav" });
+
+        // Save file to server or process further as needed
+        console.log("Audio file created:", file);
+      };
+
+      mediaRecorderRef.current.start();
+      setIsRecording(true);
+    } catch (error) {
+      console.error("Error accessing microphone:", error);
+    }
+  };
+
+  // Function to stop recording
+  const stopRecording = () => {
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
+  const handleMicToggle = () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+    setIsMicEnabled(!isMicEnabled);
+  };
 
   const handleDragStart = (e) => {
     setDragStart(e.clientX);
@@ -189,7 +235,7 @@ const BillItemCards = () => {
             </div>
 
             <button
-              onClick={() => setIsMicEnabled(!isMicEnabled)}
+              onClick={handleMicToggle}
               className={`mb-6 p-3 rounded-full transition-all duration-300 shadow ${
                 isMicEnabled
                   ? "bg-[#BCF4F5] text-[#234F3D] shadow-md"

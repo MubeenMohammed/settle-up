@@ -1,3 +1,4 @@
+
 const API_BASE_URL = "http://10.121.78.248:8000";
 
 export const createUser = async (user) => {
@@ -148,3 +149,33 @@ export const addSplit = async (billId, itemId, payedById, owedByIds, totalItemPr
   });
   return response.json();
 }
+
+
+export const getGroupExpense = async (groupId, userId) => {
+
+
+
+  const response = await fetch(`${API_BASE_URL}/group-expense?group_id=${groupId}&user_id=${userId}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  return response.json();
+}
+
+// response {status: "success", data: {owe: 1, lent: 4}}
+// 
+
+
+export const getUserTotalExpense = async (userId) => {
+  const response = await fetch(`${API_BASE_URL}/user-total-expense?user_id=${userId}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  return response.json();
+}
+
+//response {status: "success", data: {owe: 1, lent: 4}}
