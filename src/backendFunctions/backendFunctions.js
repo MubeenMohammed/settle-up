@@ -51,6 +51,8 @@ export const addGroups = async (group, user_id, group_description) => {
 };
 
 
+
+
 export const getFriendByEmail = async (email) => {
   const response = await fetch(`${API_BASE_URL}/find-friend?email_id=${email}`, {
     method: "GET",
@@ -108,3 +110,41 @@ export const uploadBill = async (formData, groupSelected, userId) => {
     throw error; // Rethrow the error to handle it in the caller function
   }
 };
+
+export const getGroupDetailsByGroupId = async (groupId) => {
+  const response = await fetch(`${API_BASE_URL}/groups/${groupId}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  return response.json();
+}
+
+export const addMembersToGroup = async (groupId, memberToAddId) => {
+  const response = await fetch(`${API_BASE_URL}/groups/${groupId}/members`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({group_id: groupId, user_id: memberToAddId}),
+  });
+  return response.json();
+}
+
+export const AddSplit = async (billId, itemId, payedById, owedByIds, totalItemPrice) => {
+  const response = await fetch(`${API_BASE_URL}/bills/${billId}/items/${itemId}/split`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      bill_id: billId,
+      item_id: itemId,
+      payer_id: payedById,
+      user_ids: owedByIds,
+      total_price: totalItemPrice,
+    }),
+  });
+  return response.json();
+}

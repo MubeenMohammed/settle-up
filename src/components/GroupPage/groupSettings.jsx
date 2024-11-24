@@ -1,8 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 
 const GroupSettings = () => {
-  const [groupName, setGroupName] = useState("My Group");
-  const [groupMembers, setGroupMembers] = useState(["User 1", "User 2", "User 3"]);
+  const location = useLocation();
+  const navigate = useNavigate(); // Correctly initialize `navigate` function
+  const { group } = location.state || {};
+  const [groupName, setGroupName] = useState(
+    group ? group.group_name : "Group Name"
+  );
+  const [groupMembers, setGroupMembers] = useState(
+    sessionStorage.getItem("groupDetails")
+      ? JSON.parse(sessionStorage.getItem("groupDetails")).members
+      : []
+  );
 
   const handleEditGroupName = () => {
     const newName = prompt("Enter new group name:", groupName);
@@ -20,59 +31,68 @@ const GroupSettings = () => {
   };
 
   const handleDeleteGroup = () => {
-    if (window.confirm("Are you sure you want to delete the group? This action cannot be undone.")) {
+    if (
+      window.confirm(
+        "Are you sure you want to delete the group? This action cannot be undone."
+      )
+    ) {
       alert("Group deleted.");
       // Add actual functionality for deleting the group
     }
   };
 
   return (
-    <div className="bg-[#B4EBCA] min-h-screen p-4 font-sans">
+    <div className="bg-gradient-to-br from-[#BCF4F5] to-[#D9F2B4] min-h-screen p-6 font-sans">
       {/* Header */}
-      <div className="flex items-center justify-between bg-[#BCF4F5] p-4 rounded-md shadow-md">
+      <div className="flex items-center justify-between bg-[#234F3D] text-white p-4 rounded-md shadow-lg">
         <button
-          className="text-xl text-black"
-          onClick={() => window.history.back()}
+          className="text-lg font-semibold flex items-center space-x-1"
+          onClick={() => {
+            sessionStorage.removeItem("groupDetails");
+            navigate("/home"); // Use the `navigate` function
+          }}
         >
-          &#8592;
+          <ArrowLeft className="w-5 h-5" />
+          <span>Back</span>
         </button>
-        <h1 className="text-lg font-bold text-black">Group Settings</h1>
+        <h1 className="text-xl font-bold">Group Settings</h1>
       </div>
 
       {/* Body */}
-      <div className="mt-4 space-y-4">
+      <div className="mt-6 space-y-6">
         {/* Group Name */}
-        <div className="bg-[#D9F2B4] p-4 rounded-md shadow-md">
+        <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-[#234F3D]">
           <div className="flex items-center justify-between">
-            <span className="text-lg font-semibold">Group Name:</span>
+            <h2 className="text-lg font-semibold text-[#234F3D]">Group Name</h2>
             <button
-              className="bg-[#BCF4F5] text-black py-1 px-3 rounded-md shadow hover:bg-[#aee8ea]"
+              className="bg-[#BCF4F5] text-[#234F3D] py-1 px-4 rounded-lg shadow hover:bg-[#aee8ea] transition duration-200"
               onClick={handleEditGroupName}
             >
               Edit
             </button>
           </div>
-          <p className="mt-2 text-lg font-bold">{groupName}</p>
+          <p className="mt-2 text-xl font-bold text-gray-700">{groupName}</p>
         </div>
 
         {/* Add More People */}
         <button
-          className="w-full bg-[#BCF4F5] text-black py-2 rounded-md shadow-md font-semibold hover:bg-[#aee8ea]"
+          className="w-full bg-[#234F3D] text-white py-3 rounded-lg shadow-lg font-semibold hover:bg-[#1b3c2f] transition duration-200"
           onClick={handleAddMember}
         >
           Add More People to the Group
         </button>
 
         {/* Group Members */}
-        <div className="bg-[#D9F2B4] p-4 rounded-md shadow-md">
-          <h2 className="text-lg font-semibold mb-2">Group Members</h2>
-          <ul className="space-y-2">
-            {groupMembers.map((member, index) => (
+        <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-[#234F3D]">
+          <h2 className="text-lg font-semibold text-[#234F3D]">Group Members</h2>
+          <ul className="mt-4 space-y-3">
+            {groupMembers.map((member) => (
               <li
-                key={index}
-                className="flex items-center justify-between bg-white py-2 px-3 rounded-md shadow-md"
+                key={member.id}
+                className="flex items-center justify-between bg-[#F0FDF4] py-3 px-4 rounded-lg shadow hover:bg-[#EAF9EE] transition duration-200"
               >
-                <span>{member}</span>
+                <span className="text-gray-700">{member.User_info.name}</span>
+                <span className="text-gray-500">{member.User_info.email}</span>
               </li>
             ))}
           </ul>
@@ -80,7 +100,7 @@ const GroupSettings = () => {
 
         {/* Leave Group Button */}
         <button
-          className="w-full bg-red-500 text-white py-2 rounded-md shadow-md font-semibold hover:bg-red-600"
+          className="w-full bg-red-500 text-white py-3 rounded-lg shadow-lg font-semibold hover:bg-red-600 transition duration-200"
           onClick={handleLeaveGroup}
         >
           Leave Group
@@ -88,7 +108,7 @@ const GroupSettings = () => {
 
         {/* Delete Group Button */}
         <button
-          className="w-full bg-red-700 text-white py-2 rounded-md shadow-md font-semibold hover:bg-red-800"
+          className="w-full bg-red-700 text-white py-3 rounded-lg shadow-lg font-semibold hover:bg-red-800 transition duration-200"
           onClick={handleDeleteGroup}
         >
           Delete Group

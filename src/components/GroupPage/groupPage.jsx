@@ -1,6 +1,7 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Settings, ChevronLeft } from "lucide-react";
+import { getGroupDetailsByGroupId } from "../../backendFunctions/backendFunctions";
 
 export default function GroupUI({ screenWidth }) {
   const backgroundColor = "#D9F2B4";
@@ -15,9 +16,16 @@ export default function GroupUI({ screenWidth }) {
     Navigate("/home");
   };
 
-  const handleSettingsClick = (group) => {
+  const handleSettingsClick = async (group) => {
+    const groupDetails = await getGroupDetailsByGroupId(group.group_id);
+    console.log(groupDetails);
+    if (groupDetails) {
+        sessionStorage.setItem("groupDetails", JSON.stringify(groupDetails.data));
+    }
     Navigate("/group-settings", { state: { group } });
   };
+
+
 
   // Fallback if group data is missing
   if (!group) {

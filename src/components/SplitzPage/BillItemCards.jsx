@@ -1,41 +1,42 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, ChevronLeft, ChevronRight, Users, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useRef } from "react";
+import { Mic, MicOff, ChevronLeft, ChevronRight, Users, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
-// Simulated data structure for a bill item
-const sampleItems = [
-  {
-    id: 1,
-    name: "Margherita Pizza",
-    price: 18.99,
-    quantity: 2,
-    total: 37.98
-  },
-  {
-    id: 2,
-    name: "Greek Salad",
-    price: 12.99,
-    quantity: 1,
-    total: 12.99
-  },
-  {
-    id: 3,
-    name: "Garlic Bread",
-    price: 6.99,
-    quantity: 3,
-    total: 20.97
+const sampleItems = (() => {
+
+ 
+  try {
+    const rawBillItems = sessionStorage.getItem("billItems");
+    if (!rawBillItems) return [];
+    const parsedItems = JSON.parse(rawBillItems).items;
+
+    if (Array.isArray(parsedItems)) {
+      return parsedItems.map((item) => ({
+        id: item.item_id,
+        name: item.item_name,
+        quantity: item.quantity,
+        price: item.price_per_unit,
+        total: item.total_price,
+      }));
+    }
+
+    return [];
+  } catch (error) {
+    console.error("Error parsing billItems from sessionStorage:", error);
+    return [];
   }
-];
+})();
 
-// Simulated group members
 const groupMembers = [
   { id: 1, name: "Alex" },
   { id: 2, name: "Taylor" },
   { id: 3, name: "Jordan" },
-  { id: 4, name: "Sam" }
+  { id: 4, name: "Sam" },
 ];
 
 const BillItemCards = () => {
+    const Navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMicEnabled, setIsMicEnabled] = useState(true);
   const [selectedMembers, setSelectedMembers] = useState({});
@@ -43,7 +44,6 @@ const BillItemCards = () => {
   const cardRef = useRef(null);
 
   useEffect(() => {
-    // Reset mic when card changes
     setIsMicEnabled(true);
   }, [currentIndex]);
 
@@ -57,45 +57,57 @@ const BillItemCards = () => {
 
     if (Math.abs(dragDistance) > threshold) {
       if (dragDistance > 0 && currentIndex < sampleItems.length - 1) {
-        setCurrentIndex(prev => prev + 1);
+        setCurrentIndex((prev) => prev + 1);
       } else if (dragDistance < 0 && currentIndex > 0) {
-        setCurrentIndex(prev => prev - 1);
+        setCurrentIndex((prev) => prev - 1);
       }
     }
   };
 
   const toggleMember = (itemId, memberId) => {
-    setSelectedMembers(prev => {
+    setSelectedMembers((prev) => {
       const currentMembers = prev[itemId] || [];
       const updatedMembers = currentMembers.includes(memberId)
-        ? currentMembers.filter(id => id !== memberId)
+        ? currentMembers.filter((id) => id !== memberId)
         : [...currentMembers, memberId];
-      
+
       return {
         ...prev,
-        [itemId]: updatedMembers
+        [itemId]: updatedMembers,
       };
     });
   };
 
   const currentItem = sampleItems[currentIndex];
 
+  const handleClose = () => {
+    sessionStorage.removeItem("billItems");
+    Navigate("/home");
+  };
+
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-r from-[#BCF4F5] via-[#B4EBCA] to-[#D9F2B4] flex items-center justify-center p-6 relative">
+      {/* Close Button */}
+      <button
+        onClick={handleClose}
+        className="absolute top-4 left-4 p-2 rounded-full bg-[#f1f1f1] text-black hover:bg-[#234F3D] transition-all duration-200 shadow-md"
+        aria-label="Close"
+      >
+        <X className="w-5 h-5" />
+      </button>
+
       <div className="w-full max-w-md mx-auto">
-        {/* Navigation indicators */}
         <div className="flex justify-center mb-4 gap-2">
           {sampleItems.map((_, idx) => (
             <div
               key={idx}
               className={`h-1 rounded-full transition-all duration-300 ${
-                idx === currentIndex ? 'w-8 bg-blue-500' : 'w-4 bg-gray-300'
+                idx === currentIndex ? "w-8 bg-[#234F3D]" : "w-4 bg-[#A5D6A7]"
               }`}
             />
           ))}
         </div>
 
-        {/* Card */}
         <AnimatePresence mode="wait">
           <motion.div
             key={currentIndex}
@@ -104,53 +116,50 @@ const BillItemCards = () => {
             exit={{ x: -300, opacity: 0 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
             ref={cardRef}
-            className="bg-white rounded-xl shadow-lg p-6 mb-4"
+            className="bg-white rounded-xl shadow-lg p-6 mb-4 border border-[#B4EBCA]"
             draggable="true"
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
           >
-            {/* Item Details */}
             <div className="flex justify-between items-start mb-6">
               <div>
-                <h2 className="text-xl font-semibold text-gray-800">{currentItem.name}</h2>
-                <p className="text-gray-500">
+                <h2 className="text-xl font-semibold text-[#234F3D]">
+                  {currentItem.name}
+                </h2>
+                <p className="text-gray-600">
                   Quantity: {currentItem.quantity} × ${currentItem.price.toFixed(2)}
                 </p>
               </div>
-              <div className="text-xl font-bold text-blue-600">
+              <div className="text-xl font-bold text-[#1B5E20]">
                 ${currentItem.total.toFixed(2)}
               </div>
             </div>
 
-            {/* Microphone Toggle */}
             <button
               onClick={() => setIsMicEnabled(!isMicEnabled)}
-              className={`mb-6 p-3 rounded-full transition-all duration-300 ${
-                isMicEnabled ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400'
+              className={`mb-6 p-3 rounded-full transition-all duration-300 shadow ${
+                isMicEnabled
+                  ? "bg-[#BCF4F5] text-[#234F3D] shadow-md"
+                  : "bg-gray-200 text-gray-500"
               }`}
             >
-              {isMicEnabled ? (
-                <Mic className="w-6 h-6" />
-              ) : (
-                <MicOff className="w-6 h-6" />
-              )}
+              {isMicEnabled ? <Mic className="w-6 h-6" /> : <MicOff className="w-6 h-6" />}
             </button>
 
-            {/* Split With Section */}
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <Users className="w-5 h-5 text-gray-600" />
-                <h3 className="font-medium text-gray-700">Split with</h3>
+                <Users className="w-5 h-5 text-[#234F3D]" />
+                <h3 className="font-medium text-[#234F3D]">Split with</h3>
               </div>
               <div className="flex flex-wrap gap-2">
-                {groupMembers.map(member => (
+                {groupMembers.map((member) => (
                   <button
                     key={member.id}
                     onClick={() => toggleMember(currentItem.id, member.id)}
-                    className={`px-4 py-2 rounded-full transition-all duration-200 ${
+                    className={`px-4 py-2 rounded-full transition-all duration-200 shadow ${
                       (selectedMembers[currentItem.id] || []).includes(member.id)
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        ? "bg-[#B4EBCA] text-white"
+                        : "bg-gray-100 text-[#234F3D] hover:bg-[#D9F2B4]"
                     }`}
                   >
                     {member.name}
@@ -161,24 +170,26 @@ const BillItemCards = () => {
           </motion.div>
         </AnimatePresence>
 
-        {/* Navigation Buttons */}
         <div className="flex justify-between px-4">
           <button
-            onClick={() => currentIndex > 0 && setCurrentIndex(prev => prev - 1)}
-            className={`p-2 rounded-full ${
-              currentIndex > 0 ? 'text-blue-500 hover:bg-blue-50' : 'text-gray-300'
+            onClick={() => currentIndex > 0 && setCurrentIndex((prev) => prev - 1)}
+            className={`p-2 rounded-full shadow ${
+              currentIndex > 0
+                ? "text-[#234F3D] bg-[#BCF4F5] hover:bg-[#B4EBCA]"
+                : "text-gray-400"
             }`}
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
           <button
-            onClick={() => 
-              currentIndex < sampleItems.length - 1 && setCurrentIndex(prev => prev + 1)
+            onClick={() =>
+              currentIndex < sampleItems.length - 1 &&
+              setCurrentIndex((prev) => prev + 1)
             }
-            className={`p-2 rounded-full ${
-              currentIndex < sampleItems.length - 1 
-                ? 'text-blue-500 hover:bg-blue-50' 
-                : 'text-gray-300'
+            className={`p-2 rounded-full shadow ${
+              currentIndex < sampleItems.length - 1
+                ? "text-[#234F3D] bg-[#BCF4F5] hover:bg-[#B4EBCA]"
+                : "text-gray-400"
             }`}
           >
             <ChevronRight className="w-6 h-6" />

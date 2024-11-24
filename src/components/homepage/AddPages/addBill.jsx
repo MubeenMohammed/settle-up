@@ -1,18 +1,36 @@
 import React, { useState } from "react";
 import { ArrowLeft, Upload } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { uploadBill } from "../../../backendFunctions/backendFunctions";
+import { getGroupDetailsByGroupId, uploadBill } from "../../../backendFunctions/backendFunctions";
 
 const AddBill = () => {
   const [file, setFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState(""); // State for the selected group
   const [paidBy, setPaidBy] = useState(""); // State for the Paid By field
+  const [groupMembers, setGroupMembers] = useState([]); // State for group members
   const navigate = useNavigate();
 
   const handleFileChange = (event) => {
     if (event.target.files && event.target.files[0]) {
       setFile(event.target.files[0]);
+    }
+  };
+
+  const handleGroupChange = async (groupId) => {
+    setSelectedGroup(groupId);
+    try {
+      const groupDetails = await getGroupDetailsByGroupId(groupId);
+      if (groupDetails && groupDetails.data) {
+        setGroupMembers(groupDetails.data.members || []); // Dynamically update the members
+        sessionStorage.setItem("groupDetails", JSON.stringify(groupDetails.data));
+      } else {
+        setGroupMembers([]); // Clear members if no data found
+        alert("Error fetching group details");
+      }
+    } catch (error) {
+      console.error("Error fetching group details:", error);
+      setGroupMembers([]); // Clear members on error
     }
   };
 
@@ -40,8 +58,8 @@ const AddBill = () => {
 
     try {
       const result = await uploadBill(formData, selectedGroup, paidBy); // Call the API function
-      if(result.status === "success") {
-        
+      if (result.status === "success") {
+        sessionStorage.setItem("billItems", JSON.stringify(result.data));
         navigate("/bill-item-cards");
       }
     } catch (error) {
@@ -80,7 +98,7 @@ const AddBill = () => {
             <select
               id="group"
               value={selectedGroup}
-              onChange={(e) => setSelectedGroup(e.target.value)}
+              onChange={(e) => handleGroupChange(e.target.value)}
               required
               className="w-full border-2 border-[#B4EBCA] bg-[#D9F2B4] text-[#234F3D] rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#234F3D] focus:border-transparent"
             >
@@ -113,22 +131,11 @@ const AddBill = () => {
               <option value="" disabled>
                 -- Select who paid --
               </option>
-              {JSON.parse(sessionStorage.getItem("userFriends")).map(
-                (friend) => (
-                  <option key={friend.friend_id} value={friend.friend_id}>
-                    {friend.friend_name}
-                  </option>
-                )
-              )}
-              {/* Add the user as the last option */}
-              {(() => {
-                const user = JSON.parse(sessionStorage.getItem("user"));
-                return (
-                  <option key={user.id} value={user.id}>
-                    You
-                  </option>
-                );
-              })()}
+              {groupMembers.map((member) => (
+                <option key={member.user_id} value={member.user_id}>
+                  {member.User_info.name}
+                </option>
+              ))}
             </select>
           </div>
 
