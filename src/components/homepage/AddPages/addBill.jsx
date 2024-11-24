@@ -60,6 +60,7 @@ const AddBill = () => {
       const result = await uploadBill(formData, selectedGroup, paidBy); // Call the API function
       if (result.status === "success") {
         sessionStorage.setItem("billItems", JSON.stringify(result.data));
+        sessionStorage.setItem("billPaidBy", paidBy);
         navigate("/bill-item-cards");
       }
     } catch (error) {

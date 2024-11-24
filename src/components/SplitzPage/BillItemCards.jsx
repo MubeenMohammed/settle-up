@@ -1,51 +1,55 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Mic, MicOff, ChevronLeft, ChevronRight, Users, X } from "lucide-react";
+import { Mic, MicOff, ChevronRight, Users, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-
-const sampleItems = (() => {
-
- 
-  try {
-    const rawBillItems = sessionStorage.getItem("billItems");
-    if (!rawBillItems) return [];
-    const parsedItems = JSON.parse(rawBillItems).items;
-
-    if (Array.isArray(parsedItems)) {
-      return parsedItems.map((item) => ({
-        id: item.item_id,
-        name: item.item_name,
-        quantity: item.quantity,
-        price: item.price_per_unit,
-        total: item.total_price,
-      }));
-    }
-
-    return [];
-  } catch (error) {
-    console.error("Error parsing billItems from sessionStorage:", error);
-    return [];
-  }
-})();
-
-const groupMembers = [
-  { id: 1, name: "Alex" },
-  { id: 2, name: "Taylor" },
-  { id: 3, name: "Jordan" },
-  { id: 4, name: "Sam" },
-];
+import { addSplit } from "../../backendFunctions/backendFunctions";
 
 const BillItemCards = () => {
-    const Navigate = useNavigate();
+  const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMicEnabled, setIsMicEnabled] = useState(true);
   const [selectedMembers, setSelectedMembers] = useState({});
+  const [groupMembers, setGroupMembers] = useState([]);
+  const [sampleItems, setSampleItems] = useState(null); // State to store sample items
+  const [loading, setLoading] = useState(true); // Loading state
   const [dragStart, setDragStart] = useState(0);
   const cardRef = useRef(null);
 
   useEffect(() => {
-    setIsMicEnabled(true);
-  }, [currentIndex]);
+    const initializeData = async () => {
+      try {
+        // Fetch group members from sessionStorage
+        const groupDetails = sessionStorage.getItem("groupDetails");
+        const members = groupDetails ? JSON.parse(groupDetails).members : [];
+        setGroupMembers(members);
+
+        // Fetch sample items from sessionStorage
+        const rawBillItems = sessionStorage.getItem("billItems");
+        if (rawBillItems) {
+          const parsedItems = JSON.parse(rawBillItems).items;
+          if (Array.isArray(parsedItems)) {
+            const items = parsedItems.map((item) => ({
+              id: item.item_id,
+              name: item.item_name,
+              quantity: item.quantity,
+              price: item.price_per_unit,
+              total: item.total_price,
+            }));
+            setSampleItems(items);
+          }
+        }
+      } catch (error) {
+        console.error("Error initializing data:", error);
+      } finally {
+        setLoading(false); // Mark loading as complete
+      }
+    };
+
+    initializeData();
+  }, []);
+
+  // Derived array of active user_ids for the current item
+  const activeUserIds = selectedMembers[sampleItems?.[currentIndex]?.id] || [];
 
   const handleDragStart = (e) => {
     setDragStart(e.clientX);
@@ -55,11 +59,9 @@ const BillItemCards = () => {
     const dragDistance = dragStart - e.clientX;
     const threshold = 100;
 
-    if (Math.abs(dragDistance) > threshold) {
+    if (Math.abs(dragDistance) > threshold && activeUserIds.length > 0) {
       if (dragDistance > 0 && currentIndex < sampleItems.length - 1) {
         setCurrentIndex((prev) => prev + 1);
-      } else if (dragDistance < 0 && currentIndex > 0) {
-        setCurrentIndex((prev) => prev - 1);
       }
     }
   };
@@ -78,12 +80,63 @@ const BillItemCards = () => {
     });
   };
 
-  const currentItem = sampleItems[currentIndex];
+  const handlenextClick = async () => {
+    try {
+      const billItems = JSON.parse(sessionStorage.getItem("billItems"));
+      const billId = billItems?.bill_id;
+
+      if (!billId || !sampleItems?.[currentIndex]) {
+        alert("Data is not ready. Please try again.");
+        return;
+      }
+
+      const response = await addSplit(
+        `${billId}`,
+        `${sampleItems[currentIndex].id}`,
+        sessionStorage.getItem("billPaidBy"),
+        activeUserIds,
+        sampleItems[currentIndex].total
+      );
+
+      if (response.status === "success") {
+        activeUserIds.length > 0 &&
+          currentIndex < sampleItems.length - 1 &&
+          setCurrentIndex((prev) => prev + 1);
+      }
+    } catch (error) {
+      console.error("Error handling next click:", error);
+      alert("An error occurred while processing. Please try again.");
+    }
+  };
 
   const handleClose = () => {
     sessionStorage.removeItem("billItems");
-    Navigate("/home");
+    sessionStorage.removeItem("groupDetails");
+    sessionStorage.removeItem("billPaidBy");
+    navigate("/home");
   };
+
+  // Show loader if still loading
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-gradient-to-r from-[#BCF4F5] via-[#B4EBCA] to-[#D9F2B4]">
+        <div className="text-xl font-bold text-[#234F3D]">Loading...</div>
+      </div>
+    );
+  }
+
+  // If no sample items are available
+  if (!sampleItems || sampleItems.length === 0) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-gradient-to-r from-[#BCF4F5] via-[#B4EBCA] to-[#D9F2B4]">
+        <div className="text-xl font-bold text-[#234F3D]">
+          No items to display. Please try again.
+        </div>
+      </div>
+    );
+  }
+
+  const currentItem = sampleItems[currentIndex];
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-[#BCF4F5] via-[#B4EBCA] to-[#D9F2B4] flex items-center justify-center p-6 relative">
@@ -154,15 +207,15 @@ const BillItemCards = () => {
               <div className="flex flex-wrap gap-2">
                 {groupMembers.map((member) => (
                   <button
-                    key={member.id}
-                    onClick={() => toggleMember(currentItem.id, member.id)}
+                    key={member.user_id}
+                    onClick={() => toggleMember(currentItem.id, member.user_id)}
                     className={`px-4 py-2 rounded-full transition-all duration-200 shadow ${
-                      (selectedMembers[currentItem.id] || []).includes(member.id)
+                      activeUserIds.includes(member.user_id)
                         ? "bg-[#B4EBCA] text-white"
                         : "bg-gray-100 text-[#234F3D] hover:bg-[#D9F2B4]"
                     }`}
                   >
-                    {member.name}
+                    {member.User_info.name}
                   </button>
                 ))}
               </div>
@@ -170,26 +223,13 @@ const BillItemCards = () => {
           </motion.div>
         </AnimatePresence>
 
-        <div className="flex justify-between px-4">
+        <div className="flex justify-end px-4">
           <button
-            onClick={() => currentIndex > 0 && setCurrentIndex((prev) => prev - 1)}
+            onClick={handlenextClick}
             className={`p-2 rounded-full shadow ${
-              currentIndex > 0
+              activeUserIds.length > 0 && currentIndex < sampleItems.length - 1
                 ? "text-[#234F3D] bg-[#BCF4F5] hover:bg-[#B4EBCA]"
-                : "text-gray-400"
-            }`}
-          >
-            <ChevronLeft className="w-6 h-6" />
-          </button>
-          <button
-            onClick={() =>
-              currentIndex < sampleItems.length - 1 &&
-              setCurrentIndex((prev) => prev + 1)
-            }
-            className={`p-2 rounded-full shadow ${
-              currentIndex < sampleItems.length - 1
-                ? "text-[#234F3D] bg-[#BCF4F5] hover:bg-[#B4EBCA]"
-                : "text-gray-400"
+                : "text-gray-400 cursor-not-allowed"
             }`}
           >
             <ChevronRight className="w-6 h-6" />

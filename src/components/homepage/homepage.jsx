@@ -29,6 +29,20 @@ export default function HomePage({ screenSize }) {
   }, [navigate]);
 
   
+  useEffect(() => {
+    const user = JSON.parse(sessionStorage.getItem("user"));
+    if (user) {
+      getGroupsByUserId(user.id).then((data) => {
+        sessionStorage.setItem("userGroups", JSON.stringify(data.data));
+      });
+      getFriendsByUserId(user.id).then((data) => {
+        sessionStorage.setItem("userFriends", JSON.stringify(data.data));
+      });
+      getUserByUserId(user.id).then((data) => {
+        sessionStorage.setItem("user", JSON.stringify(data.data[0]));
+      });
+    }
+  }, []);
 
   
 

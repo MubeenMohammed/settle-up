@@ -21,8 +21,7 @@ const GroupSettings = () => {
   };
 
   const handleAddMember = () => {
-    const newMember = prompt("Enter new member's name:");
-    if (newMember) setGroupMembers([...groupMembers, newMember]);
+    navigate("/add-user-to-group");
   };
 
   const handleLeaveGroup = () => {
@@ -83,12 +82,13 @@ const GroupSettings = () => {
         </button>
 
         {/* Group Members */}
+        {/* Group Members */}
         <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-[#234F3D]">
           <h2 className="text-lg font-semibold text-[#234F3D]">Group Members</h2>
           <ul className="mt-4 space-y-3">
             {groupMembers.map((member) => (
               <li
-                key={member.id}
+                key={member.user_id || member.id} // Ensure the key is unique
                 className="flex items-center justify-between bg-[#F0FDF4] py-3 px-4 rounded-lg shadow hover:bg-[#EAF9EE] transition duration-200"
               >
                 <span className="text-gray-700">{member.User_info.name}</span>

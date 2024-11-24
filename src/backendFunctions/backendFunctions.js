@@ -132,8 +132,8 @@ export const addMembersToGroup = async (groupId, memberToAddId) => {
   return response.json();
 }
 
-export const AddSplit = async (billId, itemId, payedById, owedByIds, totalItemPrice) => {
-  const response = await fetch(`${API_BASE_URL}/bills/${billId}/items/${itemId}/split`, {
+export const addSplit = async (billId, itemId, payedById, owedByIds, totalItemPrice) => {
+  const response = await fetch(`${API_BASE_URL}/add-split`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

@@ -12,6 +12,7 @@ import GroupDetails from "./components/GroupPage/groupPage";
 import GroupSettings from "./components/GroupPage/groupSettings";
 import AddFriend from "./components/homepage/AddPages/addFriends";
 import BillItemCards from "./components/SplitzPage/BillItemCards";
+import AddMorePeopleToGroupPage from "./components/homepage/AddPages/addPeopleToGroup";
 
 function App() {
   const [screenSize, setScreenSize] = useState({
@@ -45,6 +46,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/add-user-to-group" element={<AddMorePeopleToGroupPage screenSize={screenSize} />} />
         <Route path="/bill-item-cards" element={<BillItemCards screenSize={screenSize} />} />
         <Route path="/add-friends" element={<AddFriend screenSize={screenSize} />} />
         <Route path="/add-expense" element={<AddBill screenSize={screenSize} />} />
