@@ -48,7 +48,6 @@ export default function HomePage({ screenSize }) {
 
           // Fetch user's total expenses
           const expenseData = await getUserTotalExpense(user.id);
-          console.log("Expense data:", expenseData);
           if (expenseData.status === "success") {
             console.log("Expense data:", expenseData.data);
             setExpenses({

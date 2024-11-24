@@ -179,3 +179,30 @@ export const getUserTotalExpense = async (userId) => {
 }
 
 //response {status: "success", data: {owe: 1, lent: 4}}
+
+export const sendAudioFile = async (formData, groupSelected, userId) => {
+  console.log("userId", userId);
+  console.log("groupSelected", groupSelected);
+  try {
+    // Add additional fields to the formData
+    formData.append("group_id", groupSelected);
+    formData.append("user_id", userId);
+
+    // Make the API call
+    const response = await fetch(`${API_BASE_URL}/audio-split`, {
+      method: "POST",
+      body: formData,
+    });
+
+    // Check if the response is okay
+    if (!response.ok) {
+      throw new Error(`Server responded with status ${response.status}`);
+    }
+
+    // Parse and return the JSON response
+    return await response.json();
+  } catch (error) {
+    console.error("Error uploading the bill:", error);
+    throw error; // Rethrow the error to handle it in the caller function
+  }
+}

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Mic, MicOff, ChevronRight, Users, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { addSplit } from "../../backendFunctions/backendFunctions";
+import { addSplit, sendAudioFile } from "../../backendFunctions/backendFunctions";
 
 const BillItemCards = () => {
   const navigate = useNavigate();
@@ -53,34 +53,106 @@ const BillItemCards = () => {
 
   const activeUserIds = selectedMembers[sampleItems?.[currentIndex]?.id] || []; // Dynamically derive active user IDs
 
-  // Function to start recording audio
   const startRecording = async () => {
+    const billItems = JSON.parse(sessionStorage.getItem("billItems"));
+    const billId = billItems?.bill_id;
+  
     try {
+      // Access the user's microphone
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorderRef.current = new MediaRecorder(stream);
-      audioChunksRef.current = []; // Reset audio chunks
-
+      audioChunksRef.current = [];
+  
+      // Collect audio data chunks
       mediaRecorderRef.current.ondataavailable = (event) => {
-        audioChunksRef.current.push(event.data);
+        if (event.data && event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
       };
-
-      mediaRecorderRef.current.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/wav" });
-        const fileName = `${sampleItems[currentIndex].name}_recording.wav`;
-        const file = new File([audioBlob], fileName, { type: "audio/wav" });
-
-        // Save file to server or process further as needed
-        console.log("Audio file created:", file);
+  
+      // Handle the end of recording
+      mediaRecorderRef.current.onstop = async () => {
+        try {
+          // Create an audio Blob and File object
+          const audioBlob = new Blob(audioChunksRef.current, { type: "audio/wav" });
+          const currentItem = sampleItems?.[currentIndex];
+          if (!currentItem) {
+            console.error("Current item is undefined or index is out of range.");
+            return;
+          }
+  
+          const fileName = `${currentItem.name}_recording.wav`;
+          const file = new File([audioBlob], fileName, { type: "audio/wav" });
+  
+          // Ensure the file has content before proceeding
+          if (file.size > 0) {
+            const formData = new FormData();
+            formData.append("file", file);
+  
+            // Retrieve session data
+            const groupDetails = sessionStorage.getItem("groupDetails");
+            const userDetails = sessionStorage.getItem("user");
+  
+            if (groupDetails && userDetails) {
+              const groupSelected = JSON.parse(groupDetails)?.group?.group_id;
+              const userId = JSON.parse(userDetails)?.id;
+  
+              if (!groupSelected || !userId) {
+                console.error("Invalid group details or user ID.");
+                return;
+              }
+  
+              // Upload the audio file and handle the response
+              const result = await sendAudioFile(formData, groupSelected, userId);
+              if (result?.status === "success") {
+                const addSplitResponse = await addSplit(
+                  `${billId}`,
+                  `${currentItem.id}`,
+                  sessionStorage.getItem("billPaidBy"),
+                  result.transcription,
+                  currentItem.total
+                );
+  
+                if (addSplitResponse?.status === "success") {
+                  if (currentIndex < sampleItems.length - 1) {
+                    // Move to the next card
+                    setCurrentIndex((prev) => prev + 1);
+                  } else if (currentIndex === sampleItems.length - 1) {
+                    // Perform final actions for the last card
+                    console.log("Processing last card. Navigating to home...");
+                    sessionStorage.removeItem("groupDetails");
+                    sessionStorage.removeItem("billItems");
+                    sessionStorage.removeItem("billPaidBy");
+                    navigate("/home");
+                  }
+                } else {
+                  console.error("Failed to add split:", addSplitResponse);
+                }
+              } else {
+                console.error("Audio file upload failed:", result);
+              }
+            } else {
+              console.error("Group details or user details are missing in sessionStorage.");
+            }
+          } else {
+            console.error("Generated file is empty.");
+          }
+        } catch (error) {
+          console.error("Error during recording or upload:", error);
+        }
       };
-
+  
+      // Start the recording
       mediaRecorderRef.current.start();
       setIsRecording(true);
     } catch (error) {
       console.error("Error accessing microphone:", error);
     }
   };
+  
+  
+  
 
-  // Function to stop recording
   const stopRecording = () => {
     if (mediaRecorderRef.current) {
       mediaRecorderRef.current.stop();
@@ -162,7 +234,6 @@ const BillItemCards = () => {
     navigate("/home");
   };
 
-  // Show loader if still loading
   if (loading) {
     return (
       <div className="h-screen flex items-center justify-center bg-gradient-to-r from-[#BCF4F5] via-[#B4EBCA] to-[#D9F2B4]">
@@ -171,7 +242,6 @@ const BillItemCards = () => {
     );
   }
 
-  // If no sample items are available
   if (!sampleItems || sampleItems.length === 0) {
     return (
       <div className="h-screen flex items-center justify-center bg-gradient-to-r from-[#BCF4F5] via-[#B4EBCA] to-[#D9F2B4]">
