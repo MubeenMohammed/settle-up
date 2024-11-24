@@ -23,6 +23,7 @@ const LoginSignUpScreen = () => {
       {/* Background Image */}
       <div className="absolute inset-0">
         <img
+          style={{ opacity: 0.7, zIndex: -1, height: "100vh", objectFit: "cover" }}
           src={BackgroundImage}
           alt="Background Illustration"
           className="w-full h-full object-cover"
