@@ -36,7 +36,7 @@ export default function GroupsTab({ groups }) {
           <div className="flex justify-center mt-4">
             <button
               className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md shadow-md transition-all"
-              onClick={() => alert("Add more groups functionality goes here!")}
+              onClick={() => navigate("/add-group")}
             >
               Add More Groups
             </button>
@@ -69,7 +69,7 @@ export default function GroupsTab({ groups }) {
           <div className="flex justify-center mt-4">
             <button
               className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md shadow-md transition-all"
-              onClick={() => alert("Add more groups functionality goes here!")}
+              onClick={() => navigate("/add-group")}
             >
               Add More Groups
             </button>

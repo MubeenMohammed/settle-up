@@ -6,10 +6,10 @@ import SignUp from "./components/authentication/signUp";
 import LoginSignupScreen from "./components/authentication/loginSignUpScreen";
 import ProtectedRoute from "./components/authentication/ProtectedRoute";
 import ErrorPage from "./components/ErrorPage/ErrorPage";
-//import AddExpense from "./components/homepage/AddPages/addExpense";
+import AddExpense from "./components/homepage/AddPages/addExpense";
 import AddGroup from "./components/homepage/AddPages/addGroup";
 import GroupDetails from "./components/GroupPage/groupPage";
-import GroupMembersPage from "./components/GroupPage/groupMembersPage";
+import GroupSettings from "./components/GroupPage/groupSettings";
 
 function App() {
   const [screenSize, setScreenSize] = useState({
@@ -43,8 +43,8 @@ function App() {
             </ProtectedRoute>
           }
         />
-        {/* <Route path="/add-expense" element={<AddExpense screenSize={screenSize} />} /> */}
-        <Route path="/group-members" element={<GroupMembersPage screenSize={screenSize} />} />
+        <Route path="/add-expense" element={<AddExpense screenSize={screenSize} />} />
+        <Route path="/group-settings" element={<GroupSettings screenSize={screenSize} />} />
         <Route path="/add-group" element={<AddGroup screenSize={screenSize} />} />
         <Route path="/group-details" element={<GroupDetails screenSize={screenSize} />} />
         <Route path="*" element={<ErrorPage screenSize={screenSize} />} />

@@ -34,7 +34,7 @@ export default function HomePage({ screenSize }) {
     if (onFriendsTab) {
       navigate("/add-expense");
     }
-    navigate("/add-group");
+    navigate("/add-expense");
   };
 
 

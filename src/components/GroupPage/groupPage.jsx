@@ -13,7 +13,7 @@ export default function GroupUI({ screenWidth }) {
   const { group } = location.state || {};
 
   const handleSettingsClick = (group) => {
-    Navigate("/group-members", { state: { group } });
+    Navigate("/group-settings", { state: { group } });
   }
 
   // Fallback if group data is missing

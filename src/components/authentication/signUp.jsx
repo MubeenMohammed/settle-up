@@ -13,7 +13,7 @@ export default function SignUp({ screenSize }) {
 
   const handleSignUp = async () => {
     const { data, error } = await signUp(email, password);
-    if (data) {
+    if (data.user) {
       const user = {
         user_id: data.user.id,
         name: fullname,
