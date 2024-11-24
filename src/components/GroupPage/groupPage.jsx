@@ -1,14 +1,20 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
 import { Settings } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function GroupUI({ screenWidth }) {
   const backgroundColor = "#D9F2B4";
   const cardColor = "#B4EBCA";
   const isSmallScreen = screenWidth <= 768;
+  const Navigate = useNavigate();
 
   const location = useLocation();
   const { group } = location.state || {};
+
+  const handleSettingsClick = (group) => {
+    Navigate("/group-members", { state: { group } });
+  }
 
   // Fallback if group data is missing
   if (!group) {
@@ -35,6 +41,7 @@ export default function GroupUI({ screenWidth }) {
         <button
           aria-label="Settings"
           className="hover:bg-white/90 bg-white rounded-xl p-2.5 transition-all duration-200 ease-in-out shadow-sm hover:shadow-md active:scale-95"
+          onClick={() => handleSettingsClick(group)}
         >
           <Settings 
             className="w-5 h-5 text-[#234F3D]"

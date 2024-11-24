@@ -1,6 +1,33 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function GroupsTab({ groups }) {
+    const navigate = useNavigate();
+
+    const handleGroupClick = (group) => {
+        console.log("Group clicked");
+        navigate("/group-details", { state: { group } }); // Use useNavigate here
+      };
+
+    const group = {
+        group_name: "Canadian Desis",
+        member_balance: 14.31,
+        transactions: [
+          {
+            description: "Walmart",
+            date: "Sep 14, 2024",
+            type: "lent",
+            amount: 4.82,
+          },
+          {
+            description: "Dinner",
+            date: "Sep 12, 2024",
+            type: "borrowed",
+            amount: 14.31,
+          },
+        ],
+      };
+    
   return (
     <div className="p-3">
       {!groups || groups === "No groups found" ? (
@@ -21,6 +48,7 @@ export default function GroupsTab({ groups }) {
             <div
               key={group.group_id}
               className="flex items-center justify-between mb-3 bg-white p-3 rounded-lg shadow-sm"
+                onClick={() => handleGroupClick(group)}
             >
               <div className="flex items-center">
                 {/* Group Icon */}

@@ -37,10 +37,6 @@ export default function HomePage({ screenSize }) {
     navigate("/add-group");
   };
 
-  const handleLogout = async () => {
-    await logOut();
-    navigate("/login");
-  };
 
   const dynamicStyles = {
     container: {
@@ -81,8 +77,6 @@ export default function HomePage({ screenSize }) {
           onFriendsTab={onFriendsTab}
           setOnFriendsTab={setOnFriendsTab}
         />
-        {/* Logout Button */}
-        <button onClick={handleLogout}>LogOut</button>
   
         {/* Add New Expense or Group Button */}
         <button
