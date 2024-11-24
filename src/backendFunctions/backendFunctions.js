@@ -82,3 +82,29 @@ export const getUserByUserId = async (userId) => {
   });
   return response.json();
 };
+
+
+export const uploadBill = async (formData, groupSelected, userId) => {
+  try {
+    // Add additional fields to the formData
+    formData.append("group_id", groupSelected);
+    formData.append("user_id", userId);
+
+    // Make the API call
+    const response = await fetch(`${API_BASE_URL}/scan-bill`, {
+      method: "POST",
+      body: formData,
+    });
+
+    // Check if the response is okay
+    if (!response.ok) {
+      throw new Error(`Server responded with status ${response.status}`);
+    }
+
+    // Parse and return the JSON response
+    return await response.json();
+  } catch (error) {
+    console.error("Error uploading the bill:", error);
+    throw error; // Rethrow the error to handle it in the caller function
+  }
+};

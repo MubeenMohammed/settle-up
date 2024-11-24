@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { signUp } from "../../superbase/auth";
 import { useNavigate } from "react-router-dom";
-import { createUser } from "../../backendFunctions/backendFunctions";
+import { createUser, getUserByUserId,getFriendsByUserId, getGroupsByUserId } from "../../backendFunctions/backendFunctions";
 import { getUser } from "../../superbase/auth";
 
 export default function SignUp({ screenSize }) {
@@ -26,6 +26,17 @@ export default function SignUp({ screenSize }) {
     if (error) {
       setError(error.message);
     } else {
+      if (data) {
+        await getGroupsByUserId(data.user.id).then((data) => {
+          sessionStorage.setItem("userGroups", JSON.stringify(data.data));
+        });
+        await getFriendsByUserId(data.user.id).then((data) => {
+          sessionStorage.setItem("userFriends", JSON.stringify(data.data));
+        });
+        await getUserByUserId(data.user.id).then((data) => {
+          sessionStorage.setItem("user", JSON.stringify(data.data[0]));
+        });
+      }
       Navigate("/home");
     }
   };
