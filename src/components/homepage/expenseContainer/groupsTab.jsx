@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function GroupsTab({ groups }) {
+export default function GroupsTab({ groups, setOnFriendsTab }) {
     const navigate = useNavigate();
 
     const handleGroupClick = (group) => {
@@ -36,7 +36,7 @@ export default function GroupsTab({ groups }) {
           <div className="flex justify-center mt-4">
             <button
               className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md shadow-md transition-all"
-              onClick={() => navigate("/add-group")}
+              onClick={() => navigate("/add-group", )}
             >
               Add More Groups
             </button>

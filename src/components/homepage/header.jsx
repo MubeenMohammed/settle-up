@@ -10,6 +10,7 @@ const Header = () => {
 
   const handleLogout = async () => {
     await logOut();
+    sessionStorage.clear();
     Navigate("/login");
   };
   

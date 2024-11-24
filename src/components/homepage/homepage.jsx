@@ -4,7 +4,7 @@ import { getUser, logOut } from "../../superbase/auth";
 import Header from "./header";
 import UserInfo from "./userInfo";
 import ExpenseContainer from "./expenseContainer/expenseContainer";
-import { getFriendsByUserId, getGroupsByUserId } from "../../backendFunctions/backendFunctions";
+import { getFriendsByUserId, getGroupsByUserId, getUserByUserId } from "../../backendFunctions/backendFunctions";
 import LoadingScreen from "../loadingScreen/loadingScreen";
 
 export default function HomePage({ screenSize }) {
@@ -27,6 +27,8 @@ export default function HomePage({ screenSize }) {
   
     checkUser();
   }, [navigate]);
+
+  
 
   
 
@@ -60,7 +62,7 @@ export default function HomePage({ screenSize }) {
   
         {/* User Information */}
         <UserInfo
-          name="Meha Bakliwal"
+          name={JSON.parse(sessionStorage.getItem("user")).name}
           youAreOwed={1500}
           youOwe={750}
           totalBalance={750}

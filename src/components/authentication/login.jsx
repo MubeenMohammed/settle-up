@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { login } from "../../superbase/auth";
 import { useNavigate } from "react-router-dom";
-import { getFriendsByUserId, getGroupsByUserId } from "../../backendFunctions/backendFunctions";
+import { getFriendsByUserId, getGroupsByUserId, getUserByUserId } from "../../backendFunctions/backendFunctions";
 
 export default function Login({ screenSize }) {
   const dynamicStyles = {
@@ -27,6 +27,9 @@ export default function Login({ screenSize }) {
         });
         await getFriendsByUserId(data.user.id).then((data) => {
           sessionStorage.setItem("userFriends", JSON.stringify(data.data));
+        });
+        await getUserByUserId(data.user.id).then((data) => {
+          sessionStorage.setItem("user", JSON.stringify(data.data[0]));
         });
       }
       Navigate("/home");

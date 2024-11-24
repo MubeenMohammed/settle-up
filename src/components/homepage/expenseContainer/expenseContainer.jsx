@@ -29,9 +29,9 @@ const ExpenseContainer = ({ friends, groups, onFriendsTab, setOnFriendsTab }) =>
         </button>
       </div>
       {onFriendsTab ? (
-        <FriendsTab friends={friends} />
+        <FriendsTab friends={friends} setOnFriendsTab={setOnFriendsTab}/>
       ) : (
-        <GroupsTab groups={groups} />
+        <GroupsTab groups={groups} setOnFriendsTab={setOnFriendsTab}/>
       )}
     </div>
   );

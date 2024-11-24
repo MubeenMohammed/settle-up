@@ -10,6 +10,7 @@ import AddExpense from "./components/homepage/AddPages/addExpense";
 import AddGroup from "./components/homepage/AddPages/addGroup";
 import GroupDetails from "./components/GroupPage/groupPage";
 import GroupSettings from "./components/GroupPage/groupSettings";
+import AddFriend from "./components/homepage/AddPages/addFriends";
 
 function App() {
   const [screenSize, setScreenSize] = useState({
@@ -43,6 +44,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/add-friends" element={<AddFriend screenSize={screenSize} />} />
         <Route path="/add-expense" element={<AddExpense screenSize={screenSize} />} />
         <Route path="/group-settings" element={<GroupSettings screenSize={screenSize} />} />
         <Route path="/add-group" element={<AddGroup screenSize={screenSize} />} />

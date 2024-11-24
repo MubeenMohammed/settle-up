@@ -1,11 +1,17 @@
 import React, { useState } from "react";
 import { Camera } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { addGroups, getGroupsByUserId } from "../../../backendFunctions/backendFunctions";
+import { getUser } from "../../../superbase/auth";
 
 export default function AddGroup({ screenSize }) {
-  const navigate = useNavigate();
+  const Navigate = useNavigate();
   const [groupName, setGroupName] = useState("");
+  const [description, setDescription] = useState("");
   const animatedText = "Get ready to split it up and keep it fair!";
+
+  const location = useLocation();
+  const { setOnFriendsTab } = location.state || {};
 
   const dynamicStyles = {
     container: {
@@ -16,35 +22,48 @@ export default function AddGroup({ screenSize }) {
       fontSize: screenSize?.width < 480 ? "14px" : "16px",
     },
     typingContainer: {
-      fontSize: screenSize?.width < 480 ? "14px" : "16px",
+      fontFamily: "'Rockwell Nova Cond', serif",
+      fontSize: screenSize?.width < 480 ? "18px" : "24px",
+      fontWeight: "bold",
       color: "#234F3D",
       textAlign: "center",
-      whiteSpace: "nowrap",
       overflow: "hidden",
-      borderRight: "2px solid #234F3D",
+      whiteSpace: "nowrap",
       display: "inline-block",
     },
   };
 
-  const handleDone = () => {
-    if (!groupName.trim()) {
-      alert("Please enter a group name");
+  const handleDone = async () => {
+    if (!groupName.trim() || description.trim() === "") {
+      alert("Please enter a group name and description");
       return;
     }
-    console.log("Creating group:", groupName);
+  
+    try {
+      const user = await getUser();
+      await addGroups(groupName, user.user.user.id, description);
+      await getGroupsByUserId(user.user.user.id).then((data) => {
+        sessionStorage.setItem("userGroups", JSON.stringify(data.data));
+      });
+      Navigate("/home"); // Navigate only after the group is successfully added
+    } catch (error) {
+      console.error("Error while creating the group:", error);
+    }
   };
 
   return (
     <div
       style={dynamicStyles.container}
-      className="mx-auto flex flex-col bg-[#BCF4F5] p-4"
+      className="mx-auto flex flex-col bg-[#ffffff] p-4"
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <button
           className="text-[#234F3D] hover:text-opacity-80 transition-colors p-2"
           aria-label="Close"
-          onClick={() => navigate("/home")}
+          onClick={() => {
+            Navigate("/home");
+          }}
         >
           <span className="text-2xl leading-none">&times;</span>
         </button>
@@ -84,13 +103,33 @@ export default function AddGroup({ screenSize }) {
         </div>
       </div>
 
+      {/* Description Input */}
+      <div className="mb-12">
+        <label
+          htmlFor="description"
+          className="block text-sm text-[#234F3D] font-medium mb-2"
+        >
+          Description
+        </label>
+        <textarea
+          id="description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Add a short description about the group"
+          style={dynamicStyles.input}
+          className="w-full border-b-2 border-[#B4EBCA] focus:outline-none focus:border-[#234F3D] text-lg text-[#234F3D] py-1 bg-transparent placeholder-gray-400 resize-none"
+          maxLength={100}
+          rows={1}
+        />
+      </div>
+
       {/* Animated Text Section */}
-      <div className="mt-8 text-center">
+      <div className="mt-6 text-center">
         <div
           style={{
             ...dynamicStyles.typingContainer,
-            animation: "typing 3.5s steps(40, end), blink 0.75s step-end infinite",
-            width: "100%",
+            animation:
+              "typing 3.5s steps(40, end), blink 0.75s step-end 3.5s forwards",
           }}
         >
           {animatedText}
@@ -100,6 +139,11 @@ export default function AddGroup({ screenSize }) {
       {/* Inline CSS for animations */}
       <style>
         {`
+          @font-face {
+            font-family: 'Rockwell Nova Cond';
+            src: url('https://fonts.cdnfonts.com/s/26168/RockwellNovaCond-Regular.woff') format('woff');
+          }
+
           @keyframes typing {
             from { width: 0 }
             to { width: 100% }
@@ -109,6 +153,12 @@ export default function AddGroup({ screenSize }) {
             0% { border-color: transparent }
             50% { border-color: #234F3D }
             100% { border-color: transparent }
+          }
+
+          .animate-typing {
+            display: inline-block;
+            overflow: hidden;
+            white-space: nowrap;
           }
         `}
       </style>

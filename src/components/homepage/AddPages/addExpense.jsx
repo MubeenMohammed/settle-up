@@ -48,7 +48,7 @@ const AddExpense = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#BCF4F5] flex flex-col items-center">
+    <div className="min-h-screen bg-[#ffffff] flex flex-col items-center">
       <div className="w-full max-w-lg p-4">
         {/* Back Button */}
         <button
@@ -87,7 +87,7 @@ const AddExpense = () => {
           <button
             type="submit"
             disabled={!file || isLoading}
-            className="bg-[#B4EBCA] hover:bg-[#D9F2B4] text-[#234F3D] font-medium py-3 px-4 rounded-lg shadow-md transition-colors duration-200 flex items-center justify-center w-full disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-[#98d6b1] hover:bg-[#D9F2B4] text-[#234F3D] font-medium py-3 px-4 rounded-lg shadow-md transition-colors duration-200 flex items-center justify-center w-full disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Upload className="w-4 h-4 mr-2" />
             {isLoading ? "Processing..." : "Upload and Predict"}
